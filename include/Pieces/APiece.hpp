@@ -29,6 +29,12 @@ public:
     void moveForce(int const x, int const y) final;
     void moveForce(checkfate::Position const position) override;
     //
+    /// @param onlyLegal (bool const) true by default
+    std::list<checkfate::Move> listMoves(bool const onlyLegal) override;
+    /// @param onlyLegal (bool const) true by default
+    std::list<checkfate::Move> listMoves(void) override;
+    checkfate::Move bestMove(void) override;
+    //
     checkfate::Position getPosition(void) override;
     checkfate::PositionPrecise getDisplayedPosition(void) override;
     //

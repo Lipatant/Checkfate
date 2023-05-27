@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <list>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include "GameData.hpp"
@@ -28,6 +29,7 @@ private: // sprites
     sf::Color _white = checkfate::white;
     sf::Color _black = checkfate::black;
     sf::RectangleShape _chessboard;
+    sf::RectangleShape _chessboardTarget;
     sf::View _view;
     sf::FloatRect _viewport;
     bool hasFocus = true;
@@ -45,9 +47,11 @@ private:
     bool _updateGame(void);
     bool _updateDisplay(void);
     bool _updateMouse(void);
+    bool _updatePlayerMoves(void);
     bool _loadTextures(void);
 public:
     checkfate::Player player;
+    std::list<checkfate::Move> playerMoves;
 public:
     const sf::Vector2u screenSize = {256, 224};
     sf::RenderWindow window;

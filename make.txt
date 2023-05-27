@@ -1,5 +1,6 @@
 Error.cpp
 Game.cpp
 Game/Update.cpp
+IsValid.cpp
 Main.cpp
 Pieces/APiece.cpp

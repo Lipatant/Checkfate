@@ -8,6 +8,7 @@
 #include "Game.hpp"
 #include "GameData.hpp"
 #include "Pieces/APiece.hpp"
+#include "IsValid.hpp"
 
 #include <iostream>
 
@@ -45,6 +46,29 @@ void APiece::moveForce(checkfate::Position const position)
     _clock.restart();
 }
 
+std::list<checkfate::Move> APiece::listMoves(bool const onlyLegal)
+{
+    std::list<checkfate::Move> moves;
+
+    for (int x = -1; x <= 1; x++)
+        for (int y = -1; y <= 1; y++)
+            if ((x != 0 || y != 0) && isValidMouseTile(_position.x + x, \
+                _position.y + y))
+                moves.push_back(checkfate::Move(checkfate::Position( \
+                    _position.x + x, _position.y + y)));
+    return moves;
+}
+
+std::list<checkfate::Move> APiece::listMoves(void)
+{
+    return listMoves(true);
+}
+
+checkfate::Move APiece::bestMove(void)
+{
+    return checkfate::Move(_position);
+}
+
 checkfate::Position APiece::getPosition(void)
 {
     return _position;
@@ -59,8 +83,12 @@ checkfate::PositionPrecise APiece::getDisplayedPosition(void)
         if (clockTime.asMilliseconds() >= 100)
             _isMoving = false;
         else {
-            _animatedPosition.x = _positionPrevious.x + static_cast<float>(_position.x - _positionPrevious.x) * (clockTime.asMilliseconds() / 100.0);
-            _animatedPosition.y = _positionPrevious.y + static_cast<float>(_position.y - _positionPrevious.y) * (clockTime.asMilliseconds() / 100.0);
+            _animatedPosition.x = _positionPrevious.x + \
+                static_cast<float>(_position.x - _positionPrevious.x) * \
+                (clockTime.asMilliseconds() / 100.0);
+            _animatedPosition.y = _positionPrevious.y + \
+                static_cast<float>(_position.y - _positionPrevious.y) * \
+                (clockTime.asMilliseconds() / 100.0);
         }
     }
     if (_displayed)

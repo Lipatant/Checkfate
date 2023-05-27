@@ -30,12 +30,17 @@ bool Game::_loadTextures(void)
 {
     _chessboard.setFillColor(_white);
     _chessboard.setSize(CHECKFATE_TILE);
+//    _chessboardTarget.setFillColor(sf::Color(_white.r, _black.g, _black.b));
+    _chessboardTarget.setFillColor(sf::Color::Transparent);
+    _chessboardTarget.setOutlineThickness(2);
+    _chessboardTarget.setSize({CHECKFATE_TILE_X - 4, CHECKFATE_TILE_Y - 4});
     return true;
 }
 
 bool Game::newGame(void)
 {
     player.place(0, 0);
+    _updatePlayerMoves();
     return true;
 }
 
