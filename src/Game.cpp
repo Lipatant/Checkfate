@@ -5,8 +5,8 @@
 ** -
 */
 
-#include "Error.hpp"
 #include "Game.hpp"
+#include "GameData.hpp"
 
 #define SPLIT_V(VECTOR) VECTOR.x, VECTOR.y
 
@@ -18,43 +18,25 @@ Game::Game(void) : \
     _deltaClock.restart();
     if (!window.isOpen())
         return;
+    if (!_loadTextures()) {
+        window.close();
+        return;
+    }
     _deltaPerUpdate = 1e6 / CHECKFATE_GAME_FPS;
-    std::cout << _deltaPerUpdate << std::endl;
     window.setFramerateLimit(CHECKFATE_GAME_FPS);
 }
 
-bool Game::_updateWindow(void)
+bool Game::_loadTextures(void)
 {
-    sf::Event event;
-
-    while (window.pollEvent(event)) {
-        if (event.type == sf::Event::Closed)
-            window.close();
-    }
+    _chessboard.setFillColor(_white);
+    _chessboard.setSize(CHECKFATE_TILE);
     return true;
 }
 
-bool Game::_updateGame(void)
+bool Game::newGame(void)
 {
+    player.place(0, 0);
     return true;
-}
-
-bool Game::_updateDisplay(void)
-{
-    return true;
-}
-
-bool Game::update(void)
-{
-    _delta += _deltaClock.getElapsedTime().asMicroseconds();
-    _updateWindow();
-    _deltaClock.restart();
-    while (_delta >= _deltaPerUpdate) {
-        _updateGame();
-        _delta -= _deltaPerUpdate;
-    }
-    _updateDisplay();
-    return window.isOpen();
 }
 
 };

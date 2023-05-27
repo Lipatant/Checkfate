@@ -1,6 +1,6 @@
 /*
 ** Checkfate, Virgile (Lipatant) Berrier, 2023
-** Emplynk/Error.hpp
+** Error.hpp
 ** File description:
 ** -
 */

@@ -1,10 +1,12 @@
 /*
 ** Checkfate, Virgile (Lipatant) Berrier, 2023
-** Flags.hpp
+** Game/Player.cpp
 ** File description:
 ** -
 */
 
-#pragma once
+#include "Game.hpp"
 
-#define FLAG_UNUSED __attribute__((unused))
+namespace checkfate {
+
+};

@@ -1,3 +1,5 @@
 Error.cpp
-Main.cpp
 Game.cpp
+Game/Update.cpp
+Main.cpp
+Pieces/APiece.cpp
