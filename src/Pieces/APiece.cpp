@@ -23,11 +23,26 @@ void APiece::place(int const x, int const y)
 void APiece::place(checkfate::Position const position)
 {
     _position = position;
+    _positionPrevious = position;
     _animatedPosition.x = position.x;
     _animatedPosition.y = position.y;
+    _clock.restart();
     _isMoving = false;
     _sprite.setSize(CHECKFATE_TILE);
     _sprite.setFillColor(sf::Color::Red);
+}
+
+void APiece::moveForce(int const x, int const y)
+{
+    return moveForce(checkfate::Position(x, y));
+}
+
+void APiece::moveForce(checkfate::Position const position)
+{
+    _positionPrevious = _position;
+    _position = position;
+    _isMoving = true;
+    _clock.restart();
 }
 
 checkfate::Position APiece::getPosition(void)
@@ -37,24 +52,34 @@ checkfate::Position APiece::getPosition(void)
 
 checkfate::PositionPrecise APiece::getDisplayedPosition(void)
 {
-    if (_isMoving)
-        return _animatedPosition;
-    return checkfate::PositionPrecise(_position.x, _position.y);
+    sf::Vector2f spritePosition(0, 0);
+
+    if (_displayed && _isMoving) {
+        sf::Time clockTime = _clock.getElapsedTime();
+        if (clockTime.asMilliseconds() >= 100)
+            _isMoving = false;
+        else {
+            _animatedPosition.x = _positionPrevious.x + static_cast<float>(_position.x - _positionPrevious.x) * (clockTime.asMilliseconds() / 100.0);
+            _animatedPosition.y = _positionPrevious.y + static_cast<float>(_position.y - _positionPrevious.y) * (clockTime.asMilliseconds() / 100.0);
+        }
+    }
+    if (_displayed)
+        _displayed = false;
+    if (!_isMoving) {
+        spritePosition.x = _position.x * CHECKFATE_TILE_X;
+        spritePosition.y = _position.y * CHECKFATE_TILE_Y;
+    } else {
+        spritePosition.x = _animatedPosition.x * CHECKFATE_TILE_X;
+        spritePosition.y = _animatedPosition.y * CHECKFATE_TILE_Y;
+    }
+    return spritePosition;
 }
 
 bool APiece::display(checkfate::Game &game)
 {
-    sf::Vector2f spritePosition(0, 0);
-
-    if (_isMoving) {
-        spritePosition.x = _position.x;
-        spritePosition.y = _position.y;
-    } else {
-        spritePosition.x = _animatedPosition.x;
-        spritePosition.y = _animatedPosition.y;
-    }
-    _sprite.setPosition(spritePosition);
+    _sprite.setPosition(getDisplayedPosition());
     game.window.draw(_sprite);
+    _displayed = true;
     return true;
 }
 
