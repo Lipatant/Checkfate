@@ -38,6 +38,8 @@ bool Game::newUpgrade(void)
     std::vector<Upgrade> available = {};
     int randInt;
 
+    _scoreForUpgrade -= _scorePerUpgrade;
+    _ennemiesMax += 2;
     upgradesAvailable.clear();
     for (size_t i = 0; i < upgradeListSize; i++) {
         if (upgrades.has(upgradeList[i].id))
@@ -54,7 +56,6 @@ bool Game::newUpgrade(void)
     if (upgradesAvailable.list.empty())
         return false;
     _updatePlayerMoves();
-    _scoreForUpgrade -= _scorePerUpgrade;
     gameState = checkfate::GameState::Upgrade;
     return true;
 }

@@ -5,6 +5,7 @@
 ** -
 */
 
+#include <algorithm>
 #include <cstdlib>
 #include <ctime>
 #include "Error.hpp"
@@ -74,6 +75,7 @@ bool Game::newGame(void)
 {
     _score = 0;
     combo = 0;
+    _ennemiesMax = 10;
     _scoreForUpgrade = 0;
     player.place(CHECKFATE_CHESSBOARD_SIZE_X / 2, \
         CHECKFATE_CHESSBOARD_SIZE_Y / 2);
@@ -97,7 +99,9 @@ void Game::addToScore(size_t const amount)
 
 bool Game::_addEnnemy(void)
 {
-    if (ennemies.size() + ennemiesIncomming.size() >= 10) return false;
+    if (ennemies.size() + ennemiesIncomming.size() >= \
+        std::min<size_t>(_ennemiesMax, CHECKFATE_CHESSBOARD_SIZE_X * \
+        CHECKFATE_CHESSBOARD_SIZE_Y - 9)) return false;
     checkfate::Position placement;
     bool placementConflict;
     int randInt = std::rand() % 10;
