@@ -16,10 +16,10 @@ class Game;
 
 class APiece : public IPiece {
 protected:
-    sf::RectangleShape _sprite;
     checkfate::Position _positionPrevious;
     checkfate::Position _position;
     checkfate::PositionPrecise _animatedPosition;
+    size_t _spriteIndex = 0;
     sf::Clock _clock;
     bool _isMoving;
     bool _displayed;

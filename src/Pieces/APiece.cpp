@@ -29,8 +29,6 @@ void APiece::place(checkfate::Position const position)
     _animatedPosition.y = position.y;
     _clock.restart();
     _isMoving = false;
-    _sprite.setSize(CHECKFATE_TILE);
-    _sprite.setFillColor(sf::Color::Red);
 }
 
 void APiece::moveForce(int const x, int const y)
@@ -105,8 +103,24 @@ checkfate::PositionPrecise APiece::getDisplayedPosition(void)
 
 bool APiece::display(checkfate::Game &game)
 {
-    _sprite.setPosition(getDisplayedPosition());
-    game.window.draw(_sprite);
+    sf::Vector2f spritePosition = getDisplayedPosition();
+
+    spritePosition.y -= CHECKFATE_TILE_Y * 1.5 - 2;
+    game.pieceTextureRect.left = _spriteIndex * game.pieceTextureRect.width;
+    game.pieceSprite.setTextureRect(game.pieceTextureRect);
+    game.pieceSprite.setColor(checkfate::black);
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            if (x == 0 && y == 0)
+                continue;
+            game.pieceSprite.setPosition({spritePosition.x + x, \
+                spritePosition.y + y});
+            game.window.draw(game.pieceSprite);
+        }
+    }
+    game.pieceSprite.setPosition(spritePosition);
+    game.pieceSprite.setColor(checkfate::white);
+    game.window.draw(game.pieceSprite);
     _displayed = true;
     return true;
 }

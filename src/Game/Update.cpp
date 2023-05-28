@@ -47,8 +47,13 @@ bool Game::_updateGame(void)
 {
     if (_mouseClickState == checkfate::InputStateComplex::JustPressed) {
         if (isValidMouseTile(_mouseTile)) {
-            player.moveForce(_mouseTile);
-            _updatePlayerMoves();
+            for (auto const &move: playerMoves) {
+                if (move.position == _mouseTile) {
+                    player.moveForce(_mouseTile);
+                    _updatePlayerMoves();
+                    break;
+                }
+            }
         }
     }
     return true;

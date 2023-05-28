@@ -5,6 +5,7 @@
 ** -
 */
 
+#include "Error.hpp"
 #include "Game.hpp"
 #include "GameData.hpp"
 
@@ -28,6 +29,12 @@ Game::Game(void) : \
 
 bool Game::_loadTextures(void)
 {
+    if (!pieceTexture.loadFromFile("graphics/Pieces.png"))
+        return error::raiseBool("Couldn't load graphics/Pieces.png texture");
+    pieceSprite.setTexture(pieceTexture);
+    pieceTextureRect = pieceSprite.getTextureRect();
+    pieceTextureRect.width = CHECKFATE_TILE_X;
+    pieceTextureRect.height = CHECKFATE_TILE_Y * 2;
     _chessboard.setFillColor(_white);
     _chessboard.setSize(CHECKFATE_TILE);
 //    _chessboardTarget.setFillColor(sf::Color(_white.r, _black.g, _black.b));

@@ -50,7 +50,12 @@ private:
     bool _updatePlayerMoves(void);
     bool _loadTextures(void);
 public:
+    sf::Texture pieceTexture;
+    sf::IntRect pieceTextureRect;
+    sf::Sprite pieceSprite;
+public:
     checkfate::Player player;
+    std::list<checkfate::Piece> ennemies;
     std::list<checkfate::Move> playerMoves;
 public:
     const sf::Vector2u screenSize = {256, 224};

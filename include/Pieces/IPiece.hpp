@@ -8,6 +8,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include "GameData.hpp"
 
 namespace checkfate {
@@ -40,5 +41,13 @@ public:
     //
     virtual bool display(checkfate::Game &game) = 0;
 };
+
+using Piece = std::unique_ptr<checkfate::IPiece>;
+
+template <typename T, typename... _Args>
+static Piece createPiece(_Args&&... __args)
+{
+    return std::make_unique<T>(std::forward<_Args>(__args)...);
+}
 
 };
