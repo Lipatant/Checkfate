@@ -76,6 +76,7 @@ bool Game::newGame(void)
     _score = 0;
     combo = 0;
     _ennemiesMax = 10;
+    _ennemiesTier = 2;
     _scoreForUpgrade = 0;
     player.place(CHECKFATE_CHESSBOARD_SIZE_X / 2, \
         CHECKFATE_CHESSBOARD_SIZE_Y / 2);
@@ -133,7 +134,7 @@ bool Game::_addEnnemy(void)
             }
         }
     } while (placementConflict);
-    ennemiesIncomming.back()->setTier((std::rand() % 3) + 1);
+    ennemiesIncomming.back()->setTier((std::rand() % _ennemiesTier) + 1);
     ennemiesIncomming.back()->place(placement);
     ennemiesIncomming.back()->nextMoveDelay() = 2;
     ennemiesIncomming.back()->assignGame(this);

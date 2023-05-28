@@ -238,6 +238,7 @@ bool Game::_updateDisplay(void)
     sf::Vector2f tileSize = _chessboard.getSize();
     sf::Vector2f windowRatio(getWindowRatio(window));
     checkfate::PositionPrecise playerDisplayed(player.getDisplayedPosition());
+    bool const hasSpawnkill = upgrades.has("spawnkill");
 
     playerDisplayed.x += static_cast<float>(pieceTextureRect.width) / 2;
     _view = window.getView();
@@ -277,6 +278,14 @@ bool Game::_updateDisplay(void)
                     break;
                 }
             }
+            if (hasSpawnkill) {
+                for (auto const &ennemy: ennemiesIncomming) {
+                    if (move.position == ennemy->getPosition()) {
+                        window.draw(_chessboardSprite);
+                        break;
+                    }
+                }
+            }
         }
         _chessboardTarget.setOutlineColor(checkfate::green);
         _chessboardSprite.setColor(checkfate::red);
@@ -286,6 +295,8 @@ bool Game::_updateDisplay(void)
             _chessboardTarget.setPosition(ennemy->getPosition().x * \
                 tileSize.x + 2, ennemy->getPosition().y * tileSize.y + 2);
             window.draw(_chessboardTarget);
+            if (hasSpawnkill)
+                continue;
             _chessboardSprite.setPosition(ennemy->getPosition().x * \
                 tileSize.x, ennemy->getPosition().y * tileSize.y);
             window.draw(_chessboardSprite);

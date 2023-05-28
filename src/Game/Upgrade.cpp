@@ -39,6 +39,8 @@ bool Game::newUpgrade(void)
     int randInt;
 
     _scoreForUpgrade -= _scorePerUpgrade;
+    if (_ennemiesTier < 4)
+        _ennemiesTier++;
     _ennemiesMax += 2;
     upgradesAvailable.clear();
     for (size_t i = 0; i < upgradeListSize; i++) {
@@ -106,6 +108,7 @@ bool Game::_updateDisplayUIUpgrades(void)
             if (_mouseClickState == \
                 checkfate::InputStateComplex::JustPressed) {
                 upgrades.add(upgrade);
+                _updatePlayerMoves();
                 gameState = checkfate::GameState::Playing;
                 _mouseClickState = \
                     checkfate::InputStateComplex::AlreadyPressed;

@@ -78,6 +78,7 @@ private:
     size_t _scorePerUpgrade = 25; //25;
     size_t _scoreForUpgrade;
     size_t _ennemiesMax;
+    size_t _ennemiesTier;
     sf::Text _scoreText;
 public:
     size_t combo;

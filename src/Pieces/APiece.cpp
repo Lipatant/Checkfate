@@ -78,6 +78,8 @@ void APiece::moveForce(checkfate::Position const position)
 bool APiece::_addMovement(std::list<checkfate::Move> &moves, checkfate::Move \
     move, FLAG_UNUSED bool const onlyLegal)
 {
+    bool playerGoThrough = true;
+
     if (!isValidMouseTile(move.position)) return false;
     if (_game) {
         move.distance = abs(_game->player.getPosition().x - move.position.x) \
@@ -89,10 +91,14 @@ bool APiece::_addMovement(std::list<checkfate::Move> &moves, checkfate::Move \
             for (auto &ennemy : _game->ennemiesIncomming)
                 if (ennemy->getPosition() == move.position)
                     return false;
+        } else {
+            for (auto &ennemy : _game->ennemies)
+                if (ennemy->getPosition() == move.position)
+                    playerGoThrough = false;
         }
     }
     moves.push_back(move);
-    return true;
+    return playerGoThrough;
 }
 
 std::list<checkfate::Move> APiece::listMoves(bool const onlyLegal)
