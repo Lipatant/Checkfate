@@ -106,11 +106,15 @@ std::list<checkfate::Move> APiece::listMoves(bool const onlyLegal)
         if (_isWhite) {
             if (_game->upgrades.has("player_white_knight"))
                 knightLevel += 1;
-            if (_game->upgrades.has("player_white_combo"))
+            if (_game->upgrades.has("player_white_combo_bishop"))
+                bishopLevel += std::min<size_t>(_game->combo, 2);
+            if (_game->upgrades.has("player_white_combo_tower"))
                 towerLevel += std::min<size_t>(_game->combo, 2);
         } else {
             if (_game->upgrades.has("player_black_knight"))
                 knightLevel += 1;
+            if (_game->upgrades.has("player_black_combo_bishop"))
+                bishopLevel += std::min<size_t>(_game->combo, 2);
             if (_game->upgrades.has("player_black_combo"))
                 towerLevel += std::min<size_t>(_game->combo, 2);
         }

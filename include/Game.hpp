@@ -75,7 +75,7 @@ private:
 private:
     size_t _score;
     size_t _scoreBest = 0;
-    size_t _scorePerUpgrade = 5; //25;
+    size_t _scorePerUpgrade = 25; //25;
     size_t _scoreForUpgrade;
     sf::Text _scoreText;
 public:

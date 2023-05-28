@@ -13,12 +13,16 @@ namespace checkfate {
 static const checkfate::Upgrade upgradeList[] = {
     Upgrade("player_white_knight", "Sun Mount", \
         "[white] +Knight movement"),
-    Upgrade("player_white_combo", "Reflect", \
+    Upgrade("player_white_combo_tower", "Reflect", \
         "[white] +1 tile forwards per Combo (max 2)"),
+    Upgrade("player_white_combo_bishop", "Shine", \
+        "[white] +1 tile diagonally per Combo (max 2)"),
     Upgrade("player_black_knight", "Moon Mount", \
         "[black] +Knight movement"),
-    Upgrade("player_black_combo", "Depth", \
+    Upgrade("player_black_combo_tower", "Depth", \
         "[black] +1 tile forwards per Combo (max 2)"),
+    Upgrade("player_black_combo_bishop", "Twilight", \
+        "[black] +1 tile diagonally per Combo (max 2)"),
     Upgrade("spawnkill", "First Strike", \
         "[any] Moving over an incomming ennemy kills it"),
     Upgrade("more_choices", "Erudite", \
