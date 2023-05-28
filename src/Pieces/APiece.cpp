@@ -5,6 +5,7 @@
 ** -
 */
 
+#include <algorithm>
 #include <cstdlib>
 #include "Flags.hpp"
 #include "Game.hpp"
@@ -97,43 +98,59 @@ bool APiece::_addMovement(std::list<checkfate::Move> &moves, checkfate::Move \
 std::list<checkfate::Move> APiece::listMoves(bool const onlyLegal)
 {
     std::list<checkfate::Move> moves;
+    size_t towerLevel = _towerLevel;
+    size_t bishopLevel = _bishopLevel;
+    size_t knightLevel = _knightLevel;
 
+    if (_isPlayer && _game) {
+        if (_isWhite) {
+            if (_game->upgrades.has("player_white_knight"))
+                knightLevel += 1;
+            if (_game->upgrades.has("player_white_combo"))
+                towerLevel += std::min<size_t>(_game->combo, 2);
+        } else {
+            if (_game->upgrades.has("player_black_knight"))
+                knightLevel += 1;
+            if (_game->upgrades.has("player_black_combo"))
+                towerLevel += std::min<size_t>(_game->combo, 2);
+        }
+    }
     /// TOWER LEVEL
-    for (size_t i = 1; i <= _towerLevel; i++)
+    for (size_t i = 1; i <= towerLevel; i++)
         if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
             _position.x + i, _position.y)), onlyLegal))
             break;
-    for (size_t i = 1; i <= _towerLevel; i++)
+    for (size_t i = 1; i <= towerLevel; i++)
         if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
             _position.x - i, _position.y)), onlyLegal))
             break;
-    for (size_t i = 1; i <= _towerLevel; i++)
+    for (size_t i = 1; i <= towerLevel; i++)
         if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
             _position.x, _position.y - i)), onlyLegal))
             break;
-    for (size_t i = 1; i <= _towerLevel; i++)
+    for (size_t i = 1; i <= towerLevel; i++)
         if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
             _position.x, _position.y + i)), onlyLegal))
             break;
     /// BISHOP LEVEL
-    for (size_t i = 1; i <= _bishopLevel; i++)
+    for (size_t i = 1; i <= bishopLevel; i++)
         if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
             _position.x + i, _position.y + i)), onlyLegal))
             break;
-    for (size_t i = 1; i <= _bishopLevel; i++)
+    for (size_t i = 1; i <= bishopLevel; i++)
         if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
             _position.x + i, _position.y - i)), onlyLegal))
             break;
-    for (size_t i = 1; i <= _bishopLevel; i++)
+    for (size_t i = 1; i <= bishopLevel; i++)
         if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
             _position.x - i, _position.y - i)), onlyLegal))
             break;
-    for (size_t i = 1; i <= _bishopLevel; i++)
+    for (size_t i = 1; i <= bishopLevel; i++)
         if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
             _position.x - i, _position.y + i)), onlyLegal))
             break;
     /// KNIGHT LEVEL
-    if (_knightLevel > 0) {
+    if (knightLevel > 0) {
         for (int const x : {-1, 1}) {
             for (int const y : {-1, 1}) {
                 _addMovement(moves, checkfate::Move(checkfate::Position( \
@@ -240,7 +257,7 @@ bool APiece::display(void)
     sf::Color priColor = _isWhite ? checkfate::white : checkfate::black;
     sf::Color secColor = _isWhite ? checkfate::black : checkfate::white;
 
-    if (_isPlayer && !_isMoving && _game->gameState != GameState::Playing)
+    if (_isPlayer && !_isMoving && _game->gameState == GameState::Lost)
         return false;
     if (_isMoving && _isWhite != _isWhitePrevious) {
         sf::Time clockTime = _clock.getElapsedTime();

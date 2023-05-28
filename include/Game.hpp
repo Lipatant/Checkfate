@@ -24,7 +24,30 @@ enum class InputStateComplex {
 
 enum class GameState {
     Playing,
+    Upgrade,
     Lost,
+};
+
+class Upgrade {
+public:
+    std::string id;
+    std::string name;
+    std::string description;
+public:
+    Upgrade(std::string const &id, std::string const &name, \
+        std::string const &description) : \
+        id(id), name(name), description(description) {}
+    Upgrade(Upgrade const &other) : \
+        id(other.id), name(other.name), description(other.description) {}
+};
+
+class UpgradeList {
+public:
+    std::list<Upgrade> list;
+public:
+    void clear(void);
+    void add(Upgrade const &upgrade);
+    bool has(std::string const &upgrade) const;
 };
 
 class Game {
@@ -52,15 +75,20 @@ private:
 private:
     size_t _score;
     size_t _scoreBest = 0;
-    size_t _combo;
+    size_t _scorePerUpgrade = 5; //25;
+    size_t _scoreForUpgrade;
     sf::Text _scoreText;
 public:
+    size_t combo;
     checkfate::GameState gameState;
+    checkfate::UpgradeList upgrades;
+    checkfate::UpgradeList upgradesAvailable;
 private:
     bool _updateWindow(void);
     bool _updateGame(void);
     bool _updateGamePlayerMoving(checkfate::Position const newPosition);
     bool _updateDisplayUI(void);
+    bool _updateDisplayUIUpgrades(void);
     bool _updateDisplay(void);
     bool _updateMouse(void);
     bool _updatePlayerMoves(void);
@@ -87,6 +115,8 @@ public:
     //
     bool update(void);
     bool newGame(void);
+    void addToScore(size_t const amount);
+    bool newUpgrade(void);
 };
 
 };

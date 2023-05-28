@@ -53,13 +53,12 @@ bool Game::_updateGamePlayerMoving(checkfate::Position const newPosition)
     player.moveForce(newPosition);
     for (auto ennemy = ennemies.begin(); ennemy != ennemies.end();) {
         if (ennemy->get()->getPosition() == newPosition) {
-            _score += 1 + _combo;
-            _combo += 1;
+            addToScore(1 + combo);
+            combo += 1;
             ennemies.erase(ennemy++);
         } else
             ennemy++;
     }
-    _updatePlayerMoves();
     return true;
 }
 
@@ -67,8 +66,10 @@ bool Game::_updateGame(void)
 {
     bool forceUpdate = false;
     bool playerLost = false;
-    size_t comboPrevious = _combo;
+    size_t comboPrevious = combo;
 
+    if (_scoreForUpgrade >= _scorePerUpgrade && newUpgrade())
+        return false;
     if (_mouseClickState == checkfate::InputStateComplex::JustPressed) {
         _mouseClickState = checkfate::InputStateComplex::AlreadyPressed;
         if (isValidMouseTile(_mouseTile)) {
@@ -84,12 +85,19 @@ bool Game::_updateGame(void)
     if (_score > _scoreBest)
         _scoreBest = _score;
     if (forceUpdate) {
-        if (comboPrevious == _combo)
-            _combo = 0;
+        if (comboPrevious == combo)
+            combo = 0;
+        _updatePlayerMoves();
         if (!ennemiesIncomming.empty()) {
             for (auto &ennemy: ennemiesIncomming) {
-                if (ennemy->getPosition() == player.getPosition())
-                    playerLost = true;
+                if (ennemy->getPosition() == player.getPosition()) {
+                    if (upgrades.has("spawnkill")) {
+                        addToScore(1 + combo);
+                        combo += 1;
+                        continue;
+                    } else
+                        playerLost = true;
+                }
                 ennemies.push_back(std::move(ennemy));
             }
             ennemiesIncomming.push_back(checkfate::createPiece< \
@@ -145,6 +153,8 @@ bool Game::_updateMouse(void)
 
 bool Game::_updateDisplayUI(void)
 {
+    size_t nextUpgrade = 0;
+
     _view = window.getView();
     _view.setCenter({static_cast<float>(screenSize.x) * 2, \
         static_cast<float>(screenSize.y) * 2});
@@ -153,17 +163,33 @@ bool Game::_updateDisplayUI(void)
     _scoreText.setOutlineColor(checkfate::black);
     _mouseUI = window.mapPixelToCoords(sf::Mouse::getPosition(window), _view);
     window.setView(_view);
+    if (_scoreForUpgrade < _scorePerUpgrade)
+        nextUpgrade = _scorePerUpgrade - _scoreForUpgrade;
+    _scoreText.setCharacterSize(30);
+    _scoreText.setString("Next upgrade:");
+    _scoreText.setPosition({_view.getSize().x - \
+        _scoreText.getLocalBounds().width - 20, 20});
+    window.draw(_scoreText);
+    _scoreText.setCharacterSize(40);
+    float storedY = _scoreText.getPosition().y + \
+        _scoreText.getGlobalBounds().height;
+    _scoreText.setString(std::to_string(nextUpgrade));
+    _scoreText.setPosition({_view.getSize().x - \
+        _scoreText.getLocalBounds().width - 20, storedY});
+    window.draw(_scoreText);
     _scoreText.setPosition({20, 20});
     _scoreText.setString("Score: " + std::to_string(_score));
     window.draw(_scoreText);
     _scoreText.setPosition({20, _scoreText.getPosition().y + \
         _scoreText.getLocalBounds().height + 20});
-    _scoreText.setString("Combo: " + std::to_string(_combo));
+    _scoreText.setString("Combo: " + std::to_string(combo));
     window.draw(_scoreText);
     _scoreText.setString("Best: " + std::to_string(_scoreBest));
     _scoreText.setPosition({20, _view.getSize().y - \
         _scoreText.getLocalBounds().height - 20});
     window.draw(_scoreText);
+    if (gameState == checkfate::GameState::Upgrade)
+        _updateDisplayUIUpgrades();
     if (gameState != checkfate::GameState::Lost)
         return true;
     _scoreText.setString("Leave");
@@ -213,6 +239,7 @@ bool Game::_updateDisplay(void)
     sf::Vector2f windowRatio(getWindowRatio(window));
     checkfate::PositionPrecise playerDisplayed(player.getDisplayedPosition());
 
+    playerDisplayed.x += static_cast<float>(pieceTextureRect.width) / 2;
     _view = window.getView();
     _view.setSize(screenSize.x, screenSize.y);
     _viewport = sf::FloatRect(1, 1, windowRatio.x, windowRatio.y);

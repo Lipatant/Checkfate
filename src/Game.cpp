@@ -46,7 +46,6 @@ bool Game::_loadTextures(void)
     if (!_font.loadFromFile("fonts/WayfarersToyBoxRegular.ttf"))
         return error::raiseBool("Couldn't load fonts/WayfarersToyBoxRegular.ttf font");
     _scoreText.setFont(_font);
-    _scoreText.setCharacterSize(40);
     _scoreText.setOutlineThickness(8);
     // pieceSprite
     pieceSprite.setTexture(pieceTexture);
@@ -74,7 +73,8 @@ bool Game::_loadTextures(void)
 bool Game::newGame(void)
 {
     _score = 0;
-    _combo = 0;
+    combo = 0;
+    _scoreForUpgrade = 0;
     player.place(CHECKFATE_CHESSBOARD_SIZE_X / 2, \
         CHECKFATE_CHESSBOARD_SIZE_Y / 2);
     gameState = GameState::Playing;
@@ -83,8 +83,16 @@ bool Game::newGame(void)
     ennemiesIncomming.clear();
     ennemies.push_back(checkfate::createPiece<checkfate::APiece>());
     ennemies.clear();
+    upgrades.clear();
+    upgradesAvailable.clear();
     _updatePlayerMoves();
     return true;
+}
+
+void Game::addToScore(size_t const amount)
+{
+    _score += amount;
+    _scoreForUpgrade += amount;
 }
 
 bool Game::_addEnnemy(void)
