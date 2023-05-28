@@ -1,6 +1,6 @@
 /*
 ** Checkfate, Virgile (Lipatant) Berrier, 2023
-** Piece/Player.hpp
+** Piece/Tower.hpp
 ** File description:
 ** -
 */
@@ -11,10 +11,10 @@
 
 namespace checkfate {
 
-class Player : public APiece {
+class Tower : public APiece {
 public:
-    Player() {
-        _spriteIndex = 0; _isPlayer = true; setTier(1);
+    Tower(size_t const tier) {
+        _spriteIndex = 5; setTier(tier);
     }
     void setTier(size_t const tier) override;
 };

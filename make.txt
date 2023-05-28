@@ -4,3 +4,4 @@ Game/Update.cpp
 IsValid.cpp
 Main.cpp
 Pieces/APiece.cpp
+Pieces/SetTier.cpp

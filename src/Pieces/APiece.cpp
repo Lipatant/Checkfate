@@ -5,16 +5,21 @@
 ** -
 */
 
+#include <cstdlib>
+#include "Flags.hpp"
 #include "Game.hpp"
 #include "GameData.hpp"
 #include "Pieces/APiece.hpp"
 #include "IsValid.hpp"
 
-#include <iostream>
-
 #define SPLIT_V(VECTOR) VECTOR.x, VECTOR.y
 
 namespace checkfate {
+
+void APiece::assignGame(Game *game)
+{
+    _game = game;
+}
 
 void APiece::place(int const x, int const y)
 {
@@ -29,6 +34,19 @@ void APiece::place(checkfate::Position const position)
     _animatedPosition.y = position.y;
     _clock.restart();
     _isMoving = false;
+    _nextMove.x = -1;
+    _nextMove.y = -1;
+    _nextMoveDelay = 1;
+    if (_isPlayer)
+        _isWhite = (position.x + position.y) % 2;
+    else
+        _isWhite = std::rand() % 2;
+    _isWhitePrevious = _isWhite;
+}
+
+size_t APiece::getTier(void) const
+{
+    return _tier;
 }
 
 void APiece::moveForce(int const x, int const y)
@@ -38,22 +56,93 @@ void APiece::moveForce(int const x, int const y)
 
 void APiece::moveForce(checkfate::Position const position)
 {
+    checkfate::Position gap(
+        abs(_position.x - position.x),
+        abs(_position.y - position.y)
+    );
+
+    if (gap.x > gap.y)
+        _animationSpeed = 100 * gap.x;
+    else
+        _animationSpeed = 100 * gap.y;
     _positionPrevious = _position;
     _position = position;
     _isMoving = true;
     _clock.restart();
+    _isWhitePrevious = _isWhite;
+    if (_isPlayer)
+        _isWhite = (position.x + position.y) % 2;
+}
+
+bool APiece::_addMovement(std::list<checkfate::Move> &moves, checkfate::Move \
+    move, FLAG_UNUSED bool const onlyLegal)
+{
+    if (!isValidMouseTile(move.position)) return false;
+    if (_game) {
+        move.distance = abs(_game->player.getPosition().x - move.position.x) \
+            + abs(_game->player.getPosition().y - move.position.y);
+        if (!_isPlayer) {
+            for (auto &ennemy : _game->ennemies)
+                if (ennemy->getPosition() == move.position)
+                    return false;
+            for (auto &ennemy : _game->ennemiesIncomming)
+                if (ennemy->getPosition() == move.position)
+                    return false;
+        }
+    }
+    moves.push_back(move);
+    return true;
 }
 
 std::list<checkfate::Move> APiece::listMoves(bool const onlyLegal)
 {
     std::list<checkfate::Move> moves;
 
-    for (int x = -1; x <= 1; x++)
-        for (int y = -1; y <= 1; y++)
-            if ((x != 0 || y != 0) && isValidMouseTile(_position.x + x, \
-                _position.y + y))
-                moves.push_back(checkfate::Move(checkfate::Position( \
-                    _position.x + x, _position.y + y)));
+    /// TOWER LEVEL
+    for (size_t i = 1; i <= _towerLevel; i++)
+        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+            _position.x + i, _position.y)), onlyLegal))
+            break;
+    for (size_t i = 1; i <= _towerLevel; i++)
+        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+            _position.x - i, _position.y)), onlyLegal))
+            break;
+    for (size_t i = 1; i <= _towerLevel; i++)
+        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+            _position.x, _position.y - i)), onlyLegal))
+            break;
+    for (size_t i = 1; i <= _towerLevel; i++)
+        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+            _position.x, _position.y + i)), onlyLegal))
+            break;
+    /// BISHOP LEVEL
+    for (size_t i = 1; i <= _bishopLevel; i++)
+        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+            _position.x + i, _position.y + i)), onlyLegal))
+            break;
+    for (size_t i = 1; i <= _bishopLevel; i++)
+        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+            _position.x + i, _position.y - i)), onlyLegal))
+            break;
+    for (size_t i = 1; i <= _bishopLevel; i++)
+        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+            _position.x - i, _position.y - i)), onlyLegal))
+            break;
+    for (size_t i = 1; i <= _bishopLevel; i++)
+        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+            _position.x - i, _position.y + i)), onlyLegal))
+            break;
+    /// KNIGHT LEVEL
+    if (_knightLevel > 0) {
+        for (int const x : {-1, 1}) {
+            for (int const y : {-1, 1}) {
+                _addMovement(moves, checkfate::Move(checkfate::Position( \
+                    _position.x + 2 * x, _position.y + 1 * y)), onlyLegal);
+                _addMovement(moves, checkfate::Move(checkfate::Position( \
+                    _position.x + 1 * x, _position.y + 2 * y)), onlyLegal);
+            }
+        }
+    }
     return moves;
 }
 
@@ -64,10 +153,15 @@ std::list<checkfate::Move> APiece::listMoves(void)
 
 checkfate::Move APiece::bestMove(void)
 {
-    return checkfate::Move(_position);
+    std::list<checkfate::Move> moves = listMoves();
+
+    if (moves.empty())
+        return checkfate::Move(_position);
+    moves.sort();
+    return moves.front();
 }
 
-checkfate::Position APiece::getPosition(void)
+checkfate::Position APiece::getPosition(void) const
 {
     return _position;
 }
@@ -78,15 +172,17 @@ checkfate::PositionPrecise APiece::getDisplayedPosition(void)
 
     if (_displayed && _isMoving) {
         sf::Time clockTime = _clock.getElapsedTime();
-        if (clockTime.asMilliseconds() >= 100)
+        if (clockTime.asMilliseconds() >= _animationSpeed)
             _isMoving = false;
         else {
             _animatedPosition.x = _positionPrevious.x + \
                 static_cast<float>(_position.x - _positionPrevious.x) * \
-                (clockTime.asMilliseconds() / 100.0);
+                (clockTime.asMilliseconds() / \
+                static_cast<float>(_animationSpeed));
             _animatedPosition.y = _positionPrevious.y + \
                 static_cast<float>(_position.y - _positionPrevious.y) * \
-                (clockTime.asMilliseconds() / 100.0);
+                (clockTime.asMilliseconds() / \
+                static_cast<float>(_animationSpeed));
         }
     }
     if (_displayed)
@@ -101,26 +197,94 @@ checkfate::PositionPrecise APiece::getDisplayedPosition(void)
     return spritePosition;
 }
 
-bool APiece::display(checkfate::Game &game)
+checkfate::Position &APiece::nextMove(void)
 {
-    sf::Vector2f spritePosition = getDisplayedPosition();
+    return _nextMove;
+}
 
+size_t &APiece::nextMoveDelay(void)
+{
+    return _nextMoveDelay;
+}
+
+bool &APiece::isWhite(void)
+{
+    return _isWhite;
+}
+
+bool APiece::isWhite(void) const
+{
+    return _isWhite;
+}
+
+sf::Color APiece::_colorTransition(sf::Color const pri, sf::Color const sec)
+{
+    sf::Time clockTime = _clock.getElapsedTime();
+    int priR = pri.r; int priG = pri.g; int priB = pri.b;
+    int secR = sec.r; int secG = sec.g; int secB = sec.b;
+    int newR, newG, newB;
+
+    newR = secR + static_cast<float>(priR - secR) * \
+        (clockTime.asMilliseconds() / static_cast<float>(_animationSpeed));
+    newG = secG + static_cast<float>(priG - secG) * \
+        (clockTime.asMilliseconds() / static_cast<float>(_animationSpeed));
+    newB = secB + static_cast<float>(priB - secB) * \
+        (clockTime.asMilliseconds() / static_cast<float>(_animationSpeed));
+    return sf::Color(newR, newG, newB);
+}
+
+bool APiece::display(void)
+{
+    if (!_game) return false;
+    sf::Vector2f spritePosition = getDisplayedPosition();
+    sf::Color priColor = _isWhite ? checkfate::white : checkfate::black;
+    sf::Color secColor = _isWhite ? checkfate::black : checkfate::white;
+
+    if (_isPlayer && !_isMoving && _game->gameState != GameState::Playing)
+        return false;
+    if (_isMoving && _isWhite != _isWhitePrevious) {
+        sf::Time clockTime = _clock.getElapsedTime();
+        if (clockTime.asMilliseconds() < _animationSpeed) {
+            sf::Color temp(_colorTransition(priColor, secColor));
+            secColor = _colorTransition(secColor, priColor);
+            priColor = temp;
+        }
+    }
     spritePosition.y -= CHECKFATE_TILE_Y * 1.5 - 2;
-    game.pieceTextureRect.left = _spriteIndex * game.pieceTextureRect.width;
-    game.pieceSprite.setTextureRect(game.pieceTextureRect);
-    game.pieceSprite.setColor(checkfate::black);
+    _game->pieceTextureRect.left = _spriteIndex * \
+        _game->pieceTextureRect.width;
+    _game->pieceSprite.setTextureRect(_game->pieceTextureRect);
+    _game->pieceSprite.setColor(secColor);
     for (int x = -1; x <= 1; x++) {
         for (int y = -1; y <= 1; y++) {
             if (x == 0 && y == 0)
                 continue;
-            game.pieceSprite.setPosition({spritePosition.x + x, \
+            _game->pieceSprite.setPosition({spritePosition.x + x, \
                 spritePosition.y + y});
-            game.window.draw(game.pieceSprite);
+            _game->window.draw(_game->pieceSprite);
         }
     }
-    game.pieceSprite.setPosition(spritePosition);
-    game.pieceSprite.setColor(checkfate::white);
-    game.window.draw(game.pieceSprite);
+    _game->pieceSprite.setPosition(spritePosition);
+    _game->pieceSprite.setColor(priColor);
+    _game->window.draw(_game->pieceSprite);
+    if (!_isPlayer) {
+        _game->pieceTierTextureRect.left = _tier * \
+            _game->pieceTierTextureRect.width;
+        _game->pieceTierSprite.setTextureRect(_game->pieceTierTextureRect);
+        _game->pieceTierSprite.setColor(secColor);
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                if (x == 0 && y == 0)
+                    continue;
+                _game->pieceTierSprite.setPosition({spritePosition.x + x, \
+                    spritePosition.y + y});
+                _game->window.draw(_game->pieceTierSprite);
+            }
+        }
+        _game->pieceTierSprite.setPosition(spritePosition);
+        _game->pieceTierSprite.setColor(priColor);
+        _game->window.draw(_game->pieceTierSprite);
+    }
     _displayed = true;
     return true;
 }
