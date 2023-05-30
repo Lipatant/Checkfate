@@ -14,19 +14,21 @@ static const checkfate::Upgrade upgradeList[] = {
     Upgrade("player_white_knight", "Sun Mount", \
         "[white] +Knight movement"),
     Upgrade("player_white_combo_tower", "Reflect", \
-        "[white] +1 tile forwards per Combo (max 2)"),
+        "[white] +1 tile forwards per Combo above 1 (max +2)"),
     Upgrade("player_white_combo_bishop", "Shine", \
-        "[white] +1 tile diagonally per Combo (max 2)"),
+        "[white] +1 tile diagonally per Combo above 1 (max +2)"),
     Upgrade("player_black_knight", "Moon Mount", \
         "[black] +Knight movement"),
     Upgrade("player_black_combo_tower", "Depth", \
-        "[black] +1 tile forwards per Combo (max 2)"),
+        "[black] +1 tile forwards per Combo above 1 (max +2)"),
     Upgrade("player_black_combo_bishop", "Twilight", \
-        "[black] +1 tile diagonally per Combo (max 2)"),
+        "[black] +1 tile diagonally per Combo above 1 (max +2)"),
     Upgrade("spawnkill", "First Strike", \
         "[any] Moving over an incomming ennemy kills it"),
     Upgrade("more_choices", "Erudite", \
         "[any] +2 choices when upgrading"),
+    Upgrade("player_not_moving", "Inner Peace", \
+        "[any] You can move on yourself if you have at least 1 Combo"),
 };
 static const size_t upgradeListSize = \
     sizeof(upgradeList) / sizeof(upgradeList[0]);
@@ -89,7 +91,7 @@ bool Game::_updateDisplayUIUpgrades(void)
         position.y += _scoreText.getGlobalBounds().height;
         // DESCRIPTION
         description = _scoreText;
-        description.setCharacterSize(20);
+        description.setCharacterSize(16);
         description.setString(upgrade.description);
         position.x = (_view.getSize().x / 2) - \
             description.getGlobalBounds().width / 2;
