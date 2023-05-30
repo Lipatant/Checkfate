@@ -177,6 +177,23 @@ bool Game::_updateDisplayUI(void)
     _scoreText.setPosition({_view.getSize().x - \
         _scoreText.getLocalBounds().width - 20, storedY});
     window.draw(_scoreText);
+    // Unit
+    if (!_selectedPieceName.empty() && gameState == \
+        checkfate::GameState::Playing) {
+        _scoreText.setCharacterSize(30);
+        storedY = _scoreText.getPosition().y + \
+            _scoreText.getGlobalBounds().height + 20;
+        if (_selectedPieceTier > 0)
+            _scoreText.setString(_selectedPieceName + " " + \
+                std::to_string(_selectedPieceTier));
+        else
+            _scoreText.setString(_selectedPieceName);
+        _scoreText.setPosition({_view.getSize().x - \
+            _scoreText.getLocalBounds().width - 20, storedY});
+        window.draw(_scoreText);
+    }
+    // Score
+    _scoreText.setCharacterSize(40);
     _scoreText.setPosition({20, 20});
     _scoreText.setString("Score: " + std::to_string(_score));
     window.draw(_scoreText);
@@ -314,6 +331,11 @@ bool Game::_updateDisplay(void)
             window.draw(_chessboardSprite);
         }
     }
+    if (_mouseTile == player.getPosition())
+        _selectedPieceName = player.getName();
+    else
+        _selectedPieceName = "";
+    _selectedPieceTier = 0;
     ennemies.sort(sortDisplayed);
     bool playerHasBeenDisplayed = false;
     for (auto &ennemy: ennemies) {
@@ -323,6 +345,10 @@ bool Game::_updateDisplay(void)
             playerHasBeenDisplayed = true;
         }
         ennemy->display();
+        if (_mouseTile == ennemy->getPosition()) {
+            _selectedPieceName = ennemy->getName();
+            _selectedPieceTier = ennemy->getTier();
+        }
     }
     if (!playerHasBeenDisplayed)
         player.display();

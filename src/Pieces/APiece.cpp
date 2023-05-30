@@ -191,6 +191,11 @@ checkfate::Move APiece::bestMove(void)
     return moves.front();
 }
 
+std::string const &APiece::getName(void) const
+{
+    return _name;
+}
+
 checkfate::Position APiece::getPosition(void) const
 {
     return _position;

@@ -14,7 +14,7 @@ namespace checkfate {
 class Player : public APiece {
 public:
     Player() {
-        _spriteIndex = 0; _isPlayer = true; setTier(1);
+        _spriteIndex = 0; _isPlayer = true; setTier(1); _name = "";
     }
     void setTier(size_t const tier) override;
 };

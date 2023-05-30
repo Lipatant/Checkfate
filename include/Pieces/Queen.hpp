@@ -14,7 +14,7 @@ namespace checkfate {
 class Queen : public APiece {
 public:
     Queen(size_t const tier) {
-        _spriteIndex = 2; setTier(tier);
+        _spriteIndex = 2; setTier(tier); _name = "Queen";
     }
     void setTier(size_t const tier) override;
 };

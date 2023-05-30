@@ -34,6 +34,7 @@ protected:
     checkfate::Position _nextMove;
     bool _isWhite = false;
     bool _isWhitePrevious = false;
+    std::string _name = std::string("Piece");
 protected:
     sf::Color _colorTransition(sf::Color const pri, sf::Color const sec);
     bool _addMovement(std::list<checkfate::Move> &moves, checkfate::Move \
@@ -54,6 +55,7 @@ public:
     /// @param onlyLegal (bool const) true by default
     std::list<checkfate::Move> listMoves(void) override;
     checkfate::Move bestMove(void) override;
+    std::string const &getName(void) const override;
     //
     checkfate::Position getPosition(void) const override;
     checkfate::PositionPrecise getDisplayedPosition(void) override;

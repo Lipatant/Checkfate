@@ -43,6 +43,7 @@ public:
     virtual checkfate::Move bestMove(void) = 0;
     virtual bool &isWhite(void) = 0;
     virtual bool isWhite(void) const = 0;
+    virtual std::string const &getName(void) const = 0;
     //
     virtual checkfate::Position getPosition(void) const = 0;
     virtual checkfate::PositionPrecise getDisplayedPosition(void) = 0;

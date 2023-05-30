@@ -80,6 +80,8 @@ private:
     size_t _ennemiesMax;
     size_t _ennemiesTier;
     sf::Text _scoreText;
+    std::string _selectedPieceName;
+    size_t _selectedPieceTier;
 public:
     size_t combo;
     checkfate::GameState gameState;
