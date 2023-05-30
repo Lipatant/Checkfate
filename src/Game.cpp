@@ -21,7 +21,8 @@
 namespace checkfate {
 
 Game::Game(void) : \
-    window(sf::VideoMode(SPLIT_V(screenSize)), "Checkfate")
+    window(sf::VideoMode::getDesktopMode(), "Checkfate", \
+        sf::Style::Resize | sf::Style::Close)
 {
     _deltaClock.restart();
     if (!window.isOpen())

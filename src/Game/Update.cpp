@@ -8,6 +8,8 @@
 #include "Game.hpp"
 #include "IsValid.hpp"
 
+#define SPLIT_V(VECTOR) VECTOR.x, VECTOR.y
+
 static bool sortDisplayed(checkfate::Piece &piece1, checkfate::Piece &piece2)
 {
     return piece1->getDisplayedPosition().y < piece2->getDisplayedPosition().y;
@@ -38,6 +40,17 @@ bool Game::_updateWindow(void)
             hasFocus = true;
         if (event.type == sf::Event::LostFocus)
             hasFocus = false;
+    }
+    if (hasFocus && sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+        window.close();
+    if (_mouseClickMState == checkfate::InputStateComplex::JustPressed) {
+        _fullscreen = !_fullscreen;
+        window.close();
+        window.create(sf::VideoMode::getDesktopMode(), "Checkfate", \
+            (_fullscreen) ? (sf::Style::Close | sf::Style::Fullscreen) : \
+            (sf::Style::Close | sf::Style::Resize));
+        window.setFramerateLimit(CHECKFATE_GAME_FPS);
+        _mouseClickMState = checkfate::InputStateComplex::AlreadyPressed;
     }
     return true;
 }
@@ -147,6 +160,19 @@ bool Game::_updateMouse(void)
         else
             _mouseClickState = checkfate::InputStateComplex::JustReleased;
         _mouseClick = false;
+    }
+    if (hasFocus && sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+        if (_mouseClickM)
+            _mouseClickMState = checkfate::InputStateComplex::AlreadyPressed;
+        else
+            _mouseClickMState = checkfate::InputStateComplex::JustPressed;
+        _mouseClickM = true;
+    } else {
+        if (!_mouseClickM)
+            _mouseClickMState = checkfate::InputStateComplex::AlreadyReleased;
+        else
+            _mouseClickMState = checkfate::InputStateComplex::JustReleased;
+        _mouseClickM = false;
     }
     return true;
 }

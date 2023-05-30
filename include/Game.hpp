@@ -73,7 +73,11 @@ private:
     sf::Vector2f _mouseUI;
     sf::Vector2i _mouseTile;
     bool _mouseClick = false;
+    bool _mouseClickM = false;
+    bool _fullscreen = false;
     checkfate::InputStateComplex _mouseClickState = \
+        checkfate::InputStateComplex::AlreadyReleased;
+    checkfate::InputStateComplex _mouseClickMState = \
         checkfate::InputStateComplex::AlreadyReleased;
 private:
     size_t _score;
