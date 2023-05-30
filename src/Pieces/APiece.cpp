@@ -121,7 +121,7 @@ std::list<checkfate::Move> APiece::listMoves(bool const onlyLegal)
                 knightLevel += 1;
             if (_game->upgrades.has("player_black_combo_bishop"))
                 bishopLevel += std::min<size_t>(_game->combo, 2);
-            if (_game->upgrades.has("player_black_combo"))
+            if (_game->upgrades.has("player_black_combo_tower"))
                 towerLevel += std::min<size_t>(_game->combo, 2);
         }
     }
