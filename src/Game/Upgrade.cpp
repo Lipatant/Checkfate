@@ -33,7 +33,7 @@ static const checkfate::Upgrade upgradeList[] = {
 
 static const checkfate::Upgrade challengeList[] = {
     Upgrade("challenge_stronger_tower", "Watchtowers", \
-        "[any] Towers spawns with +1 tier"),
+        "[any] Rooks spawns with +1 tier"),
     Upgrade("challenge_hidden_opposite", "Fog", \
         "[any] Hides the tier of ennemies of opposide color"),
 };
