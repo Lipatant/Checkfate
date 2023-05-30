@@ -35,6 +35,7 @@ protected:
     bool _isWhite = false;
     bool _isWhitePrevious = false;
     std::string _name = std::string("Piece");
+    bool _hideTier = false;
 protected:
     sf::Color _colorTransition(sf::Color const pri, sf::Color const sec);
     bool _addMovement(std::list<checkfate::Move> &moves, checkfate::Move \
@@ -46,7 +47,8 @@ public:
     void moveForce(int const x, int const y) final;
     void moveForce(checkfate::Position const position) override;
     void setTier(size_t const tier) override;
-    size_t getTier(void) const override;
+    size_t getTier(bool const forDisplay) const override;
+    size_t getTier(void) const final;
     bool &isWhite(void) final;
     bool isWhite(void) const final;
     //

@@ -347,7 +347,7 @@ bool Game::_updateDisplay(void)
         ennemy->display();
         if (_mouseTile == ennemy->getPosition()) {
             _selectedPieceName = ennemy->getName();
-            _selectedPieceTier = ennemy->getTier();
+            _selectedPieceTier = ennemy->getTier(true);
         }
     }
     if (!playerHasBeenDisplayed)

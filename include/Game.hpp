@@ -37,6 +37,8 @@ public:
     Upgrade(std::string const &id, std::string const &name, \
         std::string const &description) : \
         id(id), name(name), description(description) {}
+    Upgrade(std::string const &id) : \
+        id(id), name(id), description("???") {}
     Upgrade(Upgrade const &other) : \
         id(other.id), name(other.name), description(other.description) {}
 };
@@ -47,6 +49,7 @@ public:
 public:
     void clear(void);
     void add(Upgrade const &upgrade);
+    void add(std::string const &upgrade);
     bool has(std::string const &upgrade) const;
 };
 
@@ -98,6 +101,7 @@ private:
     bool _updatePlayerMoves(void);
     bool _loadTextures(void);
     bool _addEnnemy(void);
+    bool _chooseUpgrade(bool const challenge);
 public:
     sf::Texture pieceTexture;
     sf::IntRect pieceTextureRect;

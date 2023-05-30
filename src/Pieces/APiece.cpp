@@ -45,9 +45,20 @@ void APiece::place(checkfate::Position const position)
     _isWhitePrevious = _isWhite;
 }
 
+size_t APiece::getTier(bool const forDisplay) const
+{
+    if (forDisplay && !_isPlayer && _game) {
+        bool playerIsWhite = _game->player.isWhite();
+        if (_isWhite != playerIsWhite && \
+            _game->upgrades.has("challenge_hidden_opposite"))
+            return 0;
+    }
+    return (forDisplay && _hideTier) ? 0 : _tier;
+}
+
 size_t APiece::getTier(void) const
 {
-    return _tier;
+    return getTier(false);
 }
 
 void APiece::moveForce(int const x, int const y)
@@ -108,25 +119,20 @@ std::list<checkfate::Move> APiece::listMoves(bool const onlyLegal)
     size_t bishopLevel = _bishopLevel;
     size_t knightLevel = _knightLevel;
 
+    _hideTier = false;
     if (_isPlayer && _game) {
         if (_game->upgrades.has("player_not_moving") && _game->combo > 0)
             _addMovement(moves, checkfate::Move(checkfate::Position( \
                 _position.x, _position.y)), onlyLegal);
-        if (_isWhite) {
-            if (_game->upgrades.has("player_white_knight"))
-                knightLevel += 1;
-            if (_game->upgrades.has("player_white_combo_bishop") && _game->combo > 1)
-                bishopLevel += std::min<size_t>(_game->combo - 1, 2);
-            if (_game->upgrades.has("player_white_combo_tower") && _game->combo > 1)
-                towerLevel += std::min<size_t>(_game->combo - 1, 2);
-        } else {
-            if (_game->upgrades.has("player_black_knight"))
-                knightLevel += 1;
-            if (_game->upgrades.has("player_black_combo_bishop") && _game->combo > 1)
-                bishopLevel += std::min<size_t>(_game->combo - 1, 2);
-            if (_game->upgrades.has("player_black_combo_tower") && _game->combo > 1)
-                towerLevel += std::min<size_t>(_game->combo - 1, 2);
-        }
+        std::string coloredPrefix = _isWhite ? "W" : "B";
+        if (_game->upgrades.has(coloredPrefix + "_player_knight"))
+            knightLevel += 1;
+        if (_game->combo > 1 && \
+            _game->upgrades.has(coloredPrefix + "_player_combo_bishop"))
+            bishopLevel += std::min<size_t>(_game->combo - 1, 2);
+        if (_game->combo > 1 && \
+            _game->upgrades.has(coloredPrefix + "_player_combo_tower"))
+            towerLevel += std::min<size_t>(_game->combo - 1, 2);
     }
     /// TOWER LEVEL
     for (size_t i = 1; i <= towerLevel; i++)
@@ -274,6 +280,7 @@ bool APiece::display(void)
     sf::Vector2f spritePosition = getDisplayedPosition();
     sf::Color priColor = _isWhite ? checkfate::white : checkfate::black;
     sf::Color secColor = _isWhite ? checkfate::black : checkfate::white;
+    size_t tier;
 
     if (_isPlayer && !_isMoving && _game->gameState == GameState::Lost)
         return false;
@@ -302,8 +309,9 @@ bool APiece::display(void)
     _game->pieceSprite.setPosition(spritePosition);
     _game->pieceSprite.setColor(priColor);
     _game->window.draw(_game->pieceSprite);
-    if (!_isPlayer) {
-        _game->pieceTierTextureRect.left = _tier * \
+    tier = getTier(true);
+    if (!_isPlayer && tier != 0) {
+        _game->pieceTierTextureRect.left = tier * \
             _game->pieceTierTextureRect.width;
         _game->pieceTierSprite.setTextureRect(_game->pieceTierTextureRect);
         _game->pieceTierSprite.setColor(secColor);

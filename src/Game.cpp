@@ -108,13 +108,17 @@ bool Game::_addEnnemy(void)
     int randInt = std::rand() % 10;
 
     if (randInt < 4)
-        ennemiesIncomming.push_back(checkfate::createPiece<checkfate::Bishop>(0));
+        ennemiesIncomming.push_back(checkfate::createPiece< \
+            checkfate::Bishop>(0));
     else if (randInt < 8)
-        ennemiesIncomming.push_back(checkfate::createPiece<checkfate::Tower>(0));
+        ennemiesIncomming.push_back(checkfate::createPiece< \
+            checkfate::Tower>(upgrades.has("challenge_stronger_tower")));
     else if (randInt < 9)
-        ennemiesIncomming.push_back(checkfate::createPiece<checkfate::Queen>(0));
-    else if (randInt < 10)
-        ennemiesIncomming.push_back(checkfate::createPiece<checkfate::Knight>(0));
+        ennemiesIncomming.push_back(checkfate::createPiece< \
+            checkfate::Queen>(0));
+    else
+        ennemiesIncomming.push_back(checkfate::createPiece< \
+            checkfate::Knight>(0));
     do {
         placement.x = std::rand() % CHECKFATE_CHESSBOARD_SIZE_X;
         placement.y = std::rand() % CHECKFATE_CHESSBOARD_SIZE_Y;
@@ -134,7 +138,7 @@ bool Game::_addEnnemy(void)
             }
         }
     } while (placementConflict);
-    ennemiesIncomming.back()->setTier((std::rand() % _ennemiesTier) + 1);
+    ennemiesIncomming.back()->setTier(ennemiesIncomming.back()->getTier() + (std::rand() % _ennemiesTier) + 1);
     ennemiesIncomming.back()->place(placement);
     ennemiesIncomming.back()->nextMoveDelay() = 2;
     ennemiesIncomming.back()->assignGame(this);

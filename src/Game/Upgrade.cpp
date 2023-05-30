@@ -11,44 +11,56 @@
 namespace checkfate {
 
 static const checkfate::Upgrade upgradeList[] = {
-    Upgrade("player_white_knight", "Sun Mount", \
+    Upgrade("W_player_knight", "Sun Mount", \
         "[white] +Knight movement"),
-    Upgrade("player_white_combo_tower", "Reflect", \
+    Upgrade("W_player_combo_tower", "Reflect", \
         "[white] +1 tile forwards per Combo above 1 (max +2)"),
-    Upgrade("player_white_combo_bishop", "Shine", \
+    Upgrade("W_player_combo_bishop", "Shine", \
         "[white] +1 tile diagonally per Combo above 1 (max +2)"),
-    Upgrade("player_black_knight", "Moon Mount", \
+    Upgrade("B_player_knight", "Moon Mount", \
         "[black] +Knight movement"),
-    Upgrade("player_black_combo_tower", "Depth", \
+    Upgrade("B_player_combo_tower", "Depth", \
         "[black] +1 tile forwards per Combo above 1 (max +2)"),
-    Upgrade("player_black_combo_bishop", "Twilight", \
+    Upgrade("B_player_combo_bishop", "Twilight", \
         "[black] +1 tile diagonally per Combo above 1 (max +2)"),
     Upgrade("spawnkill", "First Strike", \
         "[any] Moving over an incomming ennemy kills it"),
     Upgrade("more_choices", "Erudite", \
-        "[any] +2 choices when upgrading"),
+        "[any] +2 choices when upgrading (includes challenges)"),
     Upgrade("player_not_moving", "Inner Peace", \
         "[any] You can move on yourself if you have at least 1 Combo"),
 };
+
+static const checkfate::Upgrade challengeList[] = {
+    Upgrade("challenge_stronger_tower", "Watchtowers", \
+        "[any] Towers spawns with +1 tier"),
+    Upgrade("challenge_hidden_opposite", "Fog", \
+        "[any] Hides the tier of ennemies of opposide color"),
+};
+
 static const size_t upgradeListSize = \
     sizeof(upgradeList) / sizeof(upgradeList[0]);
+static const size_t challengeListSize = \
+    sizeof(challengeList) / sizeof(challengeList[0]);
 
-bool Game::newUpgrade(void)
+bool Game::_chooseUpgrade(bool const challenge)
 {
-    if (_scoreForUpgrade < _scorePerUpgrade) return false;
-    if (gameState != checkfate::GameState::Playing) return false;
     std::vector<Upgrade> available = {};
     int randInt;
 
-    _scoreForUpgrade -= _scorePerUpgrade;
-    if (_ennemiesTier < 4)
-        _ennemiesTier++;
-    _ennemiesMax += 2;
     upgradesAvailable.clear();
-    for (size_t i = 0; i < upgradeListSize; i++) {
-        if (upgrades.has(upgradeList[i].id))
-            continue;
-        available.push_back(upgradeList[i]);
+    if (challenge) {
+        for (size_t i = 0; i < challengeListSize; i++) {
+            if (upgrades.has(challengeList[i].id))
+                continue;
+            available.push_back(challengeList[i]);
+        }
+    } else {
+        for (size_t i = 0; i < upgradeListSize; i++) {
+            if (upgrades.has(upgradeList[i].id))
+                continue;
+            available.push_back(upgradeList[i]);
+        }
     }
     for (size_t i = 0; i < (upgrades.has("more_choices") ? 4 : 2); i++) {
         if (available.empty())
@@ -57,8 +69,21 @@ bool Game::newUpgrade(void)
         upgradesAvailable.add(available[randInt]);
         available.erase(available.begin() + randInt);
     }
-    if (upgradesAvailable.list.empty())
-        return false;
+    return !upgradesAvailable.list.empty();
+}
+
+bool Game::newUpgrade(void)
+{
+    if (_scoreForUpgrade < _scorePerUpgrade) return false;
+    if (gameState != checkfate::GameState::Playing) return false;
+
+    _scoreForUpgrade -= _scorePerUpgrade;
+    if (_ennemiesTier < 4)
+        _ennemiesTier++;
+    _ennemiesMax += 2;
+    if (!_chooseUpgrade(false))
+        if (!_chooseUpgrade(true))
+            return false;
     _updatePlayerMoves();
     gameState = checkfate::GameState::Upgrade;
     return true;
@@ -138,6 +163,12 @@ void UpgradeList::add(Upgrade const &upgrade)
 {
     if (!has(upgrade.id))
         list.push_back(upgrade);
+}
+
+void UpgradeList::add(std::string const &upgrade)
+{
+    if (!has(upgrade))
+        list.push_back(checkfate::Upgrade(upgrade));
 }
 
 bool UpgradeList::has(std::string const &upgrade) const

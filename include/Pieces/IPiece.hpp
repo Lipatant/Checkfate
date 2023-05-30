@@ -36,6 +36,7 @@ public:
     virtual void moveForce(int const x, int const y) = 0;
     virtual void moveForce(checkfate::Position const position) = 0;
     virtual void setTier(size_t const tier) = 0;
+    virtual size_t getTier(bool const forDisplay) const = 0;
     virtual size_t getTier(void) const = 0;
     //
     virtual std::list<checkfate::Move> listMoves(bool const onlyLegal) = 0;
