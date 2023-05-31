@@ -20,9 +20,13 @@ class Move {
 public:
     checkfate::Position position;
     size_t distance = 0;
+    bool isLegal = true;
     Move(checkfate::Position const position) : position(position) { }
     Move(checkfate::Position const position, size_t const distance) : \
         position(position), distance(distance) { }
+    Move(checkfate::Position const position, size_t const distance, \
+        bool const isLegal) : \
+        position(position), distance(distance), isLegal(isLegal) { }
     //
     bool operator<(checkfate::Move const &other)
         { return distance < other.distance; }

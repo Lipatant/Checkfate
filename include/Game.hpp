@@ -84,8 +84,8 @@ private:
     size_t _scoreBest = 0;
     size_t _scorePerUpgrade = 25; //25;
     size_t _scoreForUpgrade;
-    size_t _ennemiesMax;
-    size_t _ennemiesTier;
+    size_t _enemiesMax;
+    size_t _enemiesTier;
     sf::Text _scoreText;
     std::string _selectedPieceName;
     size_t _selectedPieceTier;
@@ -100,6 +100,11 @@ private:
     bool _updateGamePlayerMoving(checkfate::Position const newPosition);
     bool _updateDisplayUI(void);
     bool _updateDisplayUIUpgrades(void);
+    bool _updateDisplayEnnemyTarget(checkfate::Position const position);
+    bool _updateDisplayEnnemyTarget(checkfate::Position const position, \
+        bool const isTransparent);
+    bool _updateDisplayEnnemyTarget(checkfate::Position const position, \
+        checkfate::Piece const &enemy);
     bool _updateDisplay(void);
     bool _updateMouse(void);
     bool _updateViewMouse(void);
@@ -116,8 +121,8 @@ public:
     sf::IntRect pieceTierTextureRect;
 public:
     checkfate::Player player;
-    std::list<checkfate::Piece> ennemies;
-    std::list<checkfate::Piece> ennemiesIncomming;
+    std::list<checkfate::Piece> enemies;
+    std::list<checkfate::Piece> enemiesIncomming;
     std::list<checkfate::Move> playerMoves;
 public:
     const sf::Vector2u screenSize = {256, 224};

@@ -15,6 +15,14 @@
 
 #define SPLIT_V(VECTOR) VECTOR.x, VECTOR.y
 
+#define PIECE_MOVEMENT_MODIFIER_ROOK { \
+    sf::Vector2i(1,0), sf::Vector2i(-1,0), \
+    sf::Vector2i(0,1), sf::Vector2i(0,-1)}
+
+#define PIECE_MOVEMENT_MODIFIER_BISHOP { \
+    sf::Vector2i(1,1), sf::Vector2i(-1,1), \
+    sf::Vector2i(1,-1), sf::Vector2i(-1,-1)}
+
 namespace checkfate {
 
 void APiece::assignGame(Game *game)
@@ -87,7 +95,7 @@ void APiece::moveForce(checkfate::Position const position)
 }
 
 bool APiece::_addMovement(std::list<checkfate::Move> &moves, checkfate::Move \
-    move, FLAG_UNUSED bool const onlyLegal)
+    move, bool const onlyLegal)
 {
     bool playerGoThrough = true;
 
@@ -96,15 +104,19 @@ bool APiece::_addMovement(std::list<checkfate::Move> &moves, checkfate::Move \
         move.distance = abs(_game->player.getPosition().x - move.position.x) \
             + abs(_game->player.getPosition().y - move.position.y);
         if (!_isPlayer) {
-            for (auto &ennemy : _game->ennemies)
-                if (ennemy->getPosition() == move.position)
-                    return false;
-            for (auto &ennemy : _game->ennemiesIncomming)
-                if (ennemy->getPosition() == move.position)
-                    return false;
+            for (auto &enemy : _game->enemies) {
+                if (enemy->getPosition() == move.position) {
+                    if (onlyLegal) return false; else move.isLegal = false;
+                }
+            }
+            for (auto &enemy : _game->enemiesIncomming) {
+                if (enemy->getPosition() == move.position) {
+                    if (onlyLegal) return false; else move.isLegal = false;
+                }
+            }
         } else {
-            for (auto &ennemy : _game->ennemies)
-                if (ennemy->getPosition() == move.position)
+            for (auto &enemy : _game->enemies)
+                if (enemy->getPosition() == move.position)
                     playerGoThrough = false;
         }
     }
@@ -115,7 +127,7 @@ bool APiece::_addMovement(std::list<checkfate::Move> &moves, checkfate::Move \
 std::list<checkfate::Move> APiece::listMoves(bool const onlyLegal)
 {
     std::list<checkfate::Move> moves;
-    size_t towerLevel = _towerLevel;
+    size_t rookLevel = _rookLevel;
     size_t bishopLevel = _bishopLevel;
     size_t knightLevel = _knightLevel;
 
@@ -131,43 +143,23 @@ std::list<checkfate::Move> APiece::listMoves(bool const onlyLegal)
             _game->upgrades.has(coloredPrefix + "_player_combo_bishop"))
             bishopLevel += std::min<size_t>(_game->combo - 1, 2);
         if (_game->combo > 1 && \
-            _game->upgrades.has(coloredPrefix + "_player_combo_tower"))
-            towerLevel += std::min<size_t>(_game->combo - 1, 2);
+            _game->upgrades.has(coloredPrefix + "_player_combo_rook"))
+            rookLevel += std::min<size_t>(_game->combo - 1, 2);
     }
     /// TOWER LEVEL
-    for (size_t i = 1; i <= towerLevel; i++)
-        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
-            _position.x + i, _position.y)), onlyLegal))
-            break;
-    for (size_t i = 1; i <= towerLevel; i++)
-        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
-            _position.x - i, _position.y)), onlyLegal))
-            break;
-    for (size_t i = 1; i <= towerLevel; i++)
-        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
-            _position.x, _position.y - i)), onlyLegal))
-            break;
-    for (size_t i = 1; i <= towerLevel; i++)
-        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
-            _position.x, _position.y + i)), onlyLegal))
-            break;
+    for (auto const move: PIECE_MOVEMENT_MODIFIER_ROOK)
+        for (size_t i = 1; i <= rookLevel; i++)
+            if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+                _position.x + i * move.x, \
+                _position.y + i * move.y)), onlyLegal))
+                break;
     /// BISHOP LEVEL
-    for (size_t i = 1; i <= bishopLevel; i++)
-        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
-            _position.x + i, _position.y + i)), onlyLegal))
-            break;
-    for (size_t i = 1; i <= bishopLevel; i++)
-        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
-            _position.x + i, _position.y - i)), onlyLegal))
-            break;
-    for (size_t i = 1; i <= bishopLevel; i++)
-        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
-            _position.x - i, _position.y - i)), onlyLegal))
-            break;
-    for (size_t i = 1; i <= bishopLevel; i++)
-        if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
-            _position.x - i, _position.y + i)), onlyLegal))
-            break;
+    for (auto const move: PIECE_MOVEMENT_MODIFIER_BISHOP)
+        for (size_t i = 1; i <= bishopLevel; i++)
+            if (!_addMovement(moves, checkfate::Move(checkfate::Position( \
+                _position.x + i * move.x, \
+                _position.y + i * move.y)), onlyLegal))
+                break;
     /// KNIGHT LEVEL
     if (knightLevel > 0) {
         for (int const x : {-1, 1}) {

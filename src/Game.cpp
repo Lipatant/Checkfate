@@ -76,17 +76,17 @@ bool Game::newGame(void)
 {
     _score = 0;
     combo = 0;
-    _ennemiesMax = 10;
-    _ennemiesTier = 2;
+    _enemiesMax = 10;
+    _enemiesTier = 2;
     _scoreForUpgrade = 0;
     player.place(CHECKFATE_CHESSBOARD_SIZE_X / 2, \
         CHECKFATE_CHESSBOARD_SIZE_Y / 2);
     gameState = GameState::Playing;
     player.assignGame(this);
-    ennemiesIncomming.push_back(checkfate::createPiece<checkfate::APiece>());
-    ennemiesIncomming.clear();
-    ennemies.push_back(checkfate::createPiece<checkfate::APiece>());
-    ennemies.clear();
+    enemiesIncomming.push_back(checkfate::createPiece<checkfate::APiece>());
+    enemiesIncomming.clear();
+    enemies.push_back(checkfate::createPiece<checkfate::APiece>());
+    enemies.clear();
     upgrades.clear();
     upgradesAvailable.clear();
     _updatePlayerMoves();
@@ -101,24 +101,24 @@ void Game::addToScore(size_t const amount)
 
 bool Game::_addEnnemy(void)
 {
-    if (ennemies.size() + ennemiesIncomming.size() >= \
-        std::min<size_t>(_ennemiesMax, CHECKFATE_CHESSBOARD_SIZE_X * \
+    if (enemies.size() + enemiesIncomming.size() >= \
+        std::min<size_t>(_enemiesMax, CHECKFATE_CHESSBOARD_SIZE_X * \
         CHECKFATE_CHESSBOARD_SIZE_Y - 9)) return false;
     checkfate::Position placement;
     bool placementConflict;
     int randInt = std::rand() % 10;
 
     if (randInt < 4)
-        ennemiesIncomming.push_back(checkfate::createPiece< \
+        enemiesIncomming.push_back(checkfate::createPiece< \
             checkfate::Bishop>(0));
     else if (randInt < 8)
-        ennemiesIncomming.push_back(checkfate::createPiece< \
-            checkfate::Tower>(upgrades.has("challenge_stronger_tower")));
+        enemiesIncomming.push_back(checkfate::createPiece< \
+            checkfate::Tower>(upgrades.has("challenge_stronger_rook")));
     else if (randInt < 9)
-        ennemiesIncomming.push_back(checkfate::createPiece< \
+        enemiesIncomming.push_back(checkfate::createPiece< \
             checkfate::Queen>(0));
     else
-        ennemiesIncomming.push_back(checkfate::createPiece< \
+        enemiesIncomming.push_back(checkfate::createPiece< \
             checkfate::Knight>(0));
     do {
         placement.x = std::rand() % CHECKFATE_CHESSBOARD_SIZE_X;
@@ -126,23 +126,23 @@ bool Game::_addEnnemy(void)
         placementConflict = false;
         if (placement == player.getPosition())
             placementConflict = true;
-        for (auto const &ennemy: ennemies) {
-            if (placement == ennemy->getPosition()) {
+        for (auto const &enemy: enemies) {
+            if (placement == enemy->getPosition()) {
                 placementConflict = true;
                 break;
             }
         }
-        for (auto const &ennemy: ennemiesIncomming) {
-            if (placement == ennemy->getPosition()) {
+        for (auto const &enemy: enemiesIncomming) {
+            if (placement == enemy->getPosition()) {
                 placementConflict = true;
                 break;
             }
         }
     } while (placementConflict);
-    ennemiesIncomming.back()->setTier(ennemiesIncomming.back()->getTier() + (std::rand() % _ennemiesTier) + 1);
-    ennemiesIncomming.back()->place(placement);
-    ennemiesIncomming.back()->nextMoveDelay() = 2;
-    ennemiesIncomming.back()->assignGame(this);
+    enemiesIncomming.back()->setTier(enemiesIncomming.back()->getTier() + (std::rand() % _enemiesTier) + 1);
+    enemiesIncomming.back()->place(placement);
+    enemiesIncomming.back()->nextMoveDelay() = 2;
+    enemiesIncomming.back()->assignGame(this);
     return true;
 }
 

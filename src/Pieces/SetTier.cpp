@@ -17,7 +17,7 @@ namespace checkfate {
 
 void APiece::setTier(size_t const tier)
 {
-    _tier = tier; _towerLevel = tier; _bishopLevel = tier;
+    _tier = tier; _rookLevel = tier; _bishopLevel = tier;
 }
 
 void Bishop::setTier(size_t const tier)
@@ -32,17 +32,17 @@ void Knight::setTier(FLAG_UNUSED size_t const tier)
 
 void Player::setTier(size_t const tier)
 {
-    _tier = tier; _towerLevel = tier; _bishopLevel = tier;
+    _tier = tier; _rookLevel = tier; _bishopLevel = tier;
 }
 
 void Queen::setTier(size_t const tier)
 {
-    _tier = tier; _towerLevel = tier; _bishopLevel = tier;
+    _tier = tier; _rookLevel = tier; _bishopLevel = tier;
 }
 
 void Tower::setTier(size_t const tier)
 {
-    _tier = tier; _towerLevel = tier;
+    _tier = tier; _rookLevel = tier;
 }
 
 };

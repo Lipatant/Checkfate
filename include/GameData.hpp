@@ -29,6 +29,7 @@ static const sf::Color black(25, 25, 25);
 static const sf::Color red(white.r, black.g, black.b);
 static const sf::Color green(black.r, white.g, black.b);
 static const sf::Color blue(black.r, black.g, white.b);
+static const sf::Color magenta(white.r, black.g, white.b);
 
 static const size_t chessboardSizeX = CHECKFATE_CHESSBOARD_SIZE_X;
 static const size_t chessboardSizeY = CHECKFATE_CHESSBOARD_SIZE_Y;

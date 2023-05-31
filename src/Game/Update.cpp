@@ -5,12 +5,14 @@
 ** -
 */
 
+#include "Flags.hpp"
 #include "Game.hpp"
 #include "IsValid.hpp"
 
-#include <iostream>
-
 #define SPLIT_V(VECTOR) VECTOR.x, VECTOR.y
+
+#define IS_WHITE_TILE(POSITION) ((POSITION.x + POSITION.y) % 2)
+#define IS_WHITE_TILE_XY(X, Y) ((X + Y) % 2)
 
 static bool sortDisplayed(checkfate::Piece &piece1, checkfate::Piece &piece2)
 {
@@ -66,13 +68,13 @@ bool Game::_updatePlayerMoves(void)
 bool Game::_updateGamePlayerMoving(checkfate::Position const newPosition)
 {
     player.moveForce(newPosition);
-    for (auto ennemy = ennemies.begin(); ennemy != ennemies.end();) {
-        if (ennemy->get()->getPosition() == newPosition) {
+    for (auto enemy = enemies.begin(); enemy != enemies.end();) {
+        if (enemy->get()->getPosition() == newPosition) {
             addToScore(1 + combo);
             combo += 1;
-            ennemies.erase(ennemy++);
+            enemies.erase(enemy++);
         } else
-            ennemy++;
+            enemy++;
     }
     return true;
 }
@@ -102,9 +104,9 @@ bool Game::_updateGame(void)
     if (forceUpdate) {
         if (comboPrevious == combo)
             combo = 0;
-        if (!ennemiesIncomming.empty()) {
-            for (auto &ennemy: ennemiesIncomming) {
-                if (ennemy->getPosition() == player.getPosition()) {
+        if (!enemiesIncomming.empty()) {
+            for (auto &enemy: enemiesIncomming) {
+                if (enemy->getPosition() == player.getPosition()) {
                     if (upgrades.has("spawnkill")) {
                         addToScore(1 + combo);
                         combo += 1;
@@ -112,24 +114,24 @@ bool Game::_updateGame(void)
                     } else
                         playerLost = true;
                 }
-                ennemies.push_back(std::move(ennemy));
+                enemies.push_back(std::move(enemy));
             }
-            ennemiesIncomming.push_back(checkfate::createPiece< \
+            enemiesIncomming.push_back(checkfate::createPiece< \
                 checkfate::APiece>());
-            ennemiesIncomming.clear();
+            enemiesIncomming.clear();
         }
-        for (auto &ennemy: ennemies) {
-            if (ennemy->nextMoveDelay() != 0)
+        for (auto &enemy: enemies) {
+            if (enemy->nextMoveDelay() != 0)
                 continue;
-            ennemy->moveForce(ennemy->bestMove().position);
-            ennemy->nextMoveDelay() = 2;
-            if (ennemy->getPosition() == player.getPosition())
+            enemy->moveForce(enemy->bestMove().position);
+            enemy->nextMoveDelay() = 2;
+            if (enemy->getPosition() == player.getPosition())
                 playerLost = true;
         }
-        for (auto &ennemy: ennemies) {
-            if (ennemy->nextMoveDelay() == 1)
-                ennemy->nextMove() = ennemy->bestMove().position;
-            ennemy->nextMoveDelay() -= 1;
+        for (auto &enemy: enemies) {
+            if (enemy->nextMoveDelay() == 1)
+                enemy->nextMove() = enemy->bestMove().position;
+            enemy->nextMoveDelay() -= 1;
         }
         _addEnnemy();
         _updatePlayerMoves();
@@ -314,16 +316,98 @@ bool Game::_updateDisplayUI(void)
     return true;
 }
 
+bool Game::_updateDisplayEnnemyTarget(checkfate::Position const position)
+{
+    sf::Color color = checkfate::red;
+    sf::Color baseColor = IS_WHITE_TILE(position) ? \
+        checkfate::white : checkfate::black;
+    bool isTransparent = false;
+
+    if (position != player.getPosition()) {
+        isTransparent = true;
+        for (auto &move: playerMoves) {
+            if (move.position != position)
+                continue;
+            isTransparent = false;
+            break;
+        }
+    }
+    if (isTransparent) {
+        color.r = (static_cast<short>(color.r) + baseColor.r) / 2;
+        color.g = (static_cast<short>(color.g) + baseColor.g) / 2;
+        color.b = (static_cast<short>(color.b) + baseColor.b) / 2;
+    }
+    _chessboardSprite.setColor(color);
+    _chessboardSprite.setPosition(position.x * \
+        _chessboard.getSize().x, position.y * _chessboard.getSize().y);
+    window.draw(_chessboardSprite);
+    _chessboardSprite.setColor(checkfate::red);
+    return true;
+}
+
+bool Game::_updateDisplayEnnemyTarget(checkfate::Position const position, \
+    bool const isTransparent)
+{
+    sf::Color color = checkfate::red;
+    sf::Color baseColor = IS_WHITE_TILE(position) ? \
+        checkfate::white : checkfate::black;
+
+    if (isTransparent) {
+        color.r = (static_cast<short>(color.r) + baseColor.r) / 2;
+        color.g = (static_cast<short>(color.g) + baseColor.g) / 2;
+        color.b = (static_cast<short>(color.b) + baseColor.b) / 2;
+    }
+    _chessboardSprite.setColor(color);
+    _chessboardSprite.setPosition(position.x * \
+        _chessboard.getSize().x, position.y * _chessboard.getSize().y);
+    window.draw(_chessboardSprite);
+    _chessboardSprite.setColor(checkfate::red);
+    return true;
+}
+
+bool Game::_updateDisplayEnnemyTarget(checkfate::Position const position, \
+    FLAG_UNUSED checkfate::Piece const &enemy)
+{
+    sf::Color color = checkfate::red;
+    sf::Color baseColor = IS_WHITE_TILE(position) ? \
+        checkfate::white : checkfate::black;
+    bool isTransparent = false;
+
+    if (enemy->nextMoveDelay() != 0)
+        isTransparent = true;
+    else if (position != player.getPosition()) {
+        isTransparent = true;
+        for (auto &move: playerMoves) {
+            if (move.position != position)
+                continue;
+            isTransparent = false;
+            break;
+        }
+    }
+    if (isTransparent) {
+        color.r = (static_cast<short>(color.r) + baseColor.r) / 2;
+        color.g = (static_cast<short>(color.g) + baseColor.g) / 2;
+        color.b = (static_cast<short>(color.b) + baseColor.b) / 2;
+    }
+    _chessboardSprite.setColor(color);
+    _chessboardSprite.setPosition(position.x * \
+        _chessboard.getSize().x, position.y * _chessboard.getSize().y);
+    window.draw(_chessboardSprite);
+    _chessboardSprite.setColor(checkfate::red);
+    return true;
+}
+
 bool Game::_updateDisplay(void)
 {
     sf::Vector2f tileSize = _chessboard.getSize();
     bool const hasSpawnkill = upgrades.has("spawnkill");
+//    bool const hideOtherEnemies = true;
 
     _updateViewMouse();
     window.clear(sf::Color::Black);
     for (size_t x = 0; x < checkfate::chessboardSizeX; x++) {
         for (size_t y = 0; y < checkfate::chessboardSizeY; y++) {
-            if ((x + y) % 2)
+            if (IS_WHITE_TILE_XY(x, y))
                 _chessboard.setFillColor(_white);
             else
                 _chessboard.setFillColor(_black);
@@ -332,9 +416,14 @@ bool Game::_updateDisplay(void)
         }
     }
     if (gameState == GameState::Playing) {
+        if (_mouseTile == player.getPosition())
+            _selectedPieceName = player.getName();
+        else
+            _selectedPieceName = "";
+        _selectedPieceTier = 0;
         _chessboardTarget.setOutlineColor(checkfate::blue);
         _chessboardSprite.setColor(checkfate::blue);
-        _chessboardTextureRect.left = CHECKFATE_TILE_Y * 1;
+        _chessboardTextureRect.left = CHECKFATE_TILE_X * 1;
         _chessboardSprite.setTextureRect(_chessboardTextureRect);
         for (auto const move: playerMoves) {
             _chessboardTarget.setPosition(move.position.x * tileSize.x + 2, \
@@ -342,15 +431,15 @@ bool Game::_updateDisplay(void)
             window.draw(_chessboardTarget);
             _chessboardSprite.setPosition(move.position.x * tileSize.x, \
                 move.position.y * tileSize.y);
-            for (auto const &ennemy: ennemies) {
-                if (move.position == ennemy->getPosition()) {
+            for (auto const &enemy: enemies) {
+                if (move.position == enemy->getPosition()) {
                     window.draw(_chessboardSprite);
                     break;
                 }
             }
             if (hasSpawnkill) {
-                for (auto const &ennemy: ennemiesIncomming) {
-                    if (move.position == ennemy->getPosition()) {
+                for (auto const &enemy: enemiesIncomming) {
+                    if (move.position == enemy->getPosition()) {
                         window.draw(_chessboardSprite);
                         break;
                     }
@@ -361,47 +450,44 @@ bool Game::_updateDisplay(void)
         _chessboardSprite.setColor(checkfate::red);
         _chessboardTextureRect.left = CHECKFATE_TILE_Y * 0;
         _chessboardSprite.setTextureRect(_chessboardTextureRect);
-        for (auto &ennemy: ennemiesIncomming) {
-            _chessboardTarget.setPosition(ennemy->getPosition().x * \
-                tileSize.x + 2, ennemy->getPosition().y * tileSize.y + 2);
+        /// Ennemies Incomming
+        for (auto &enemy: enemiesIncomming) {
+            _chessboardTarget.setPosition(enemy->getPosition().x * \
+                tileSize.x + 2, enemy->getPosition().y * tileSize.y + 2);
             window.draw(_chessboardTarget);
             if (hasSpawnkill)
                 continue;
-            _chessboardSprite.setPosition(ennemy->getPosition().x * \
-                tileSize.x, ennemy->getPosition().y * tileSize.y);
-            window.draw(_chessboardSprite);
+            _updateDisplayEnnemyTarget(enemy->getPosition());
         }
         _chessboardTarget.setOutlineColor(checkfate::red);
-        for (auto &ennemy: ennemies) {
-            if (ennemy->nextMoveDelay() != 0 || \
-                !isValidMouseTile(ennemy->nextMove()))
+        /// Ennemy Next Move
+        for (auto &enemy: enemies) {
+            if (enemy->nextMoveDelay() != 0)
                 continue;
-            _chessboardTarget.setPosition(ennemy->getPosition().x * \
-                tileSize.x + 2, ennemy->getPosition().y * tileSize.y + 2);
+            _chessboardTarget.setPosition(enemy->getPosition().x * \
+                tileSize.x + 2, enemy->getPosition().y * tileSize.y + 2);
             window.draw(_chessboardTarget);
-            _chessboardSprite.setPosition(ennemy->nextMove().x * tileSize.x, \
-                ennemy->nextMove().y * tileSize.y);
-            window.draw(_chessboardSprite);
+            _updateDisplayEnnemyTarget(enemy->nextMove(), enemy);
+        }
+        for (auto &enemy: enemies) {
+            if (_mouseTile != enemy->getPosition())
+                continue;
+            for (auto const &move: enemy->listMoves(false))
+                _updateDisplayEnnemyTarget(move.position, enemy);
+            _selectedPieceName = enemy->getName();
+            _selectedPieceTier = enemy->getTier();
+            break;
         }
     }
-    if (_mouseTile == player.getPosition())
-        _selectedPieceName = player.getName();
-    else
-        _selectedPieceName = "";
-    _selectedPieceTier = 0;
-    ennemies.sort(sortDisplayed);
+    enemies.sort(sortDisplayed);
     bool playerHasBeenDisplayed = false;
-    for (auto &ennemy: ennemies) {
-        if (!playerHasBeenDisplayed && ennemy->getDisplayedPosition().y >= \
+    for (auto &enemy: enemies) {
+        if (!playerHasBeenDisplayed && enemy->getDisplayedPosition().y >= \
             player.getDisplayedPosition().y) {
             player.display();
             playerHasBeenDisplayed = true;
         }
-        ennemy->display();
-        if (_mouseTile == ennemy->getPosition()) {
-            _selectedPieceName = ennemy->getName();
-            _selectedPieceTier = ennemy->getTier(true);
-        }
+        enemy->display();
     }
     if (!playerHasBeenDisplayed)
         player.display();

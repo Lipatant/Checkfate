@@ -13,18 +13,18 @@ namespace checkfate {
 static const checkfate::Upgrade upgradeList[] = {
     Upgrade("W_player_knight", "Sun Mount", \
         "[white] +Knight movement"),
-    Upgrade("W_player_combo_tower", "Reflect", \
+    Upgrade("W_player_combo_rook", "Reflect", \
         "[white] +1 tile forwards per Combo above 1 (max +2)"),
     Upgrade("W_player_combo_bishop", "Shine", \
         "[white] +1 tile diagonally per Combo above 1 (max +2)"),
     Upgrade("B_player_knight", "Moon Mount", \
         "[black] +Knight movement"),
-    Upgrade("B_player_combo_tower", "Depth", \
+    Upgrade("B_player_combo_rook", "Depth", \
         "[black] +1 tile forwards per Combo above 1 (max +2)"),
     Upgrade("B_player_combo_bishop", "Twilight", \
         "[black] +1 tile diagonally per Combo above 1 (max +2)"),
     Upgrade("spawnkill", "First Strike", \
-        "[any] Moving over an incomming ennemy kills it"),
+        "[any] Moving over an incomming enemy kills it"),
     Upgrade("more_choices", "Erudite", \
         "[any] +2 choices when upgrading (includes challenges)"),
     Upgrade("player_not_moving", "Inner Peace", \
@@ -32,10 +32,10 @@ static const checkfate::Upgrade upgradeList[] = {
 };
 
 static const checkfate::Upgrade challengeList[] = {
-    Upgrade("challenge_stronger_tower", "Watchtowers", \
+    Upgrade("challenge_stronger_rook", "Watchtowers", \
         "[any] Rooks spawns with +1 tier"),
     Upgrade("challenge_hidden_opposite", "Fog", \
-        "[any] Hides the tier of ennemies of opposide color"),
+        "[any] Hides the tier of enemies of opposide color"),
 };
 
 static const size_t upgradeListSize = \
@@ -78,9 +78,9 @@ bool Game::newUpgrade(void)
     if (gameState != checkfate::GameState::Playing) return false;
 
     _scoreForUpgrade -= _scorePerUpgrade;
-    if (_ennemiesTier < 4)
-        _ennemiesTier++;
-    _ennemiesMax += 2;
+    if (_enemiesTier < 4)
+        _enemiesTier++;
+    _enemiesMax += 2;
     if (!_chooseUpgrade(false))
         if (!_chooseUpgrade(true))
             return false;

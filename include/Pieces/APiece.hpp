@@ -22,7 +22,7 @@ protected:
     sf::Int32 _animationSpeed = 1;
     size_t _spriteIndex = 0;
     size_t _bishopLevel = 0;
-    size_t _towerLevel = 0;
+    size_t _rookLevel = 0;
     size_t _knightLevel = 0;
     size_t _tier = 0;
     sf::Clock _clock;
