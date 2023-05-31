@@ -102,6 +102,7 @@ private:
     bool _updateDisplayUIUpgrades(void);
     bool _updateDisplay(void);
     bool _updateMouse(void);
+    bool _updateViewMouse(void);
     bool _updatePlayerMoves(void);
     bool _loadTextures(void);
     bool _addEnnemy(void);

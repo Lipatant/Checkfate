@@ -8,6 +8,8 @@
 #include "Game.hpp"
 #include "IsValid.hpp"
 
+#include <iostream>
+
 #define SPLIT_V(VECTOR) VECTOR.x, VECTOR.y
 
 static bool sortDisplayed(checkfate::Piece &piece1, checkfate::Piece &piece2)
@@ -139,9 +141,6 @@ bool Game::_updateGame(void)
 
 bool Game::_updateMouse(void)
 {
-    sf::Vector2i positionPixels = sf::Mouse::getPosition(window);
-
-    _mouseUI = window.mapPixelToCoords(positionPixels, _view);
     _mouseTile.x = _mouseUI.x / CHECKFATE_TILE_X;
     if (_mouseUI.x < 0)
         _mouseTile.x = -1;
@@ -174,6 +173,45 @@ bool Game::_updateMouse(void)
             _mouseClickMState = checkfate::InputStateComplex::JustReleased;
         _mouseClickM = false;
     }
+    return true;
+}
+
+bool Game::_updateViewMouse(void)
+{
+//    sf::Vector2f tileSize = _chessboard.getSize();
+    sf::Vector2f windowRatio(getWindowRatio(window));
+    checkfate::PositionPrecise playerDisplayed(player.getDisplayedPosition());
+    sf::Vector2i positionPixels = sf::Mouse::getPosition(window);
+    sf::Vector2f halfScreen;
+
+    playerDisplayed.x += static_cast<float>(pieceTextureRect.width) / 2;
+    _view = window.getView();
+    _view.setSize(screenSize.x, screenSize.y);
+    _viewport = sf::FloatRect(1, 1, windowRatio.x, windowRatio.y);
+    _viewport.left = (1 - _viewport.width) / 2;
+    _viewport.top = (1 - _viewport.height) / 2;
+    _view.setCenter(0, 0);
+    _view.setViewport(_viewport);
+    _mouseUI = window.mapPixelToCoords(positionPixels, _view);
+    //
+    halfScreen.x = static_cast<float>(screenSize.x) / 2;
+    halfScreen.y = static_cast<float>(screenSize.y) / 2;
+    if (_mouseUI.x < -halfScreen.x) _mouseUI.x = -halfScreen.x;
+    if (_mouseUI.y < -halfScreen.y) _mouseUI.y = -halfScreen.y;
+    if (_mouseUI.x > halfScreen.x) _mouseUI.x = halfScreen.x;
+    if (_mouseUI.y > halfScreen.y) _mouseUI.y = halfScreen.y;
+    if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+        if (halfScreen.x != 0)
+            playerDisplayed.x += (1 - (halfScreen.x - _mouseUI.x) \
+                / halfScreen.x) * CHECKFATE_TILE_X * 2;
+        if (halfScreen.y != 0)
+            playerDisplayed.y += (1 - (halfScreen.y - _mouseUI.y) \
+                / halfScreen.y) * CHECKFATE_TILE_Y * 2;
+    }
+    _view.setCenter(playerDisplayed);
+    _mouseUI = window.mapPixelToCoords(positionPixels, _view);
+    _updateMouse();
+    window.setView(_view);
     return true;
 }
 
@@ -279,20 +317,9 @@ bool Game::_updateDisplayUI(void)
 bool Game::_updateDisplay(void)
 {
     sf::Vector2f tileSize = _chessboard.getSize();
-    sf::Vector2f windowRatio(getWindowRatio(window));
-    checkfate::PositionPrecise playerDisplayed(player.getDisplayedPosition());
     bool const hasSpawnkill = upgrades.has("spawnkill");
 
-    playerDisplayed.x += static_cast<float>(pieceTextureRect.width) / 2;
-    _view = window.getView();
-    _view.setSize(screenSize.x, screenSize.y);
-    _viewport = sf::FloatRect(1, 1, windowRatio.x, windowRatio.y);
-    _viewport.left = (1 - _viewport.width) / 2;
-    _viewport.top = (1 - _viewport.height) / 2;
-    _view.setCenter(playerDisplayed);
-    _view.setViewport(_viewport);
-    _updateMouse();
-    window.setView(_view);
+    _updateViewMouse();
     window.clear(sf::Color::Black);
     for (size_t x = 0; x < checkfate::chessboardSizeX; x++) {
         for (size_t y = 0; y < checkfate::chessboardSizeY; y++) {
