@@ -102,7 +102,6 @@ bool Game::_updateGame(void)
     if (forceUpdate) {
         if (comboPrevious == combo)
             combo = 0;
-        _updatePlayerMoves();
         if (!ennemiesIncomming.empty()) {
             for (auto &ennemy: ennemiesIncomming) {
                 if (ennemy->getPosition() == player.getPosition()) {
@@ -133,6 +132,7 @@ bool Game::_updateGame(void)
             ennemy->nextMoveDelay() -= 1;
         }
         _addEnnemy();
+        _updatePlayerMoves();
     }
     if (playerLost)
         gameState = checkfate::GameState::Lost;
